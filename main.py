@@ -9,3 +9,23 @@ np.random.seed(42)
 input_image = np.random.rand(1, 1, 8, 8)
 
 print("Input shape:", input_image.shape)
+
+# %%
+# adding convolution layer with no padding and stride = 1
+def conv2d(X, kernel, stride=1):
+    B, C, H, W = X.shape
+    _, _, KH, KW = kernel.shape
+    out_h = (H - KH) // stride + 1
+    out_w = (W - KW) // stride + 1
+
+    out = np.zeros((B, 1, out_h, out_w))
+
+    for b in range(B):
+        for i in range(0, out_h):
+            for j in range(0, out_w):
+                region = X[b, 0, i:i+KH, j:j+KW]
+                out[b, 0, i, j] = np.sum(region * kernel[0, 0])
+    return out
+
+
+# %%
