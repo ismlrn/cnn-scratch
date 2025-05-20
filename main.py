@@ -66,3 +66,22 @@ pool_out = maxpool2d(relu_out)
 print("Pooled shape:", pool_out.shape)
 
 # %%
+# flattening the output
+def flatten(X):
+    return X.reshape(X.shape[0], -1)
+
+flat = flatten(pool_out)
+# the output shape is (1, 9)
+print("Flattened:", flat.shape)
+
+# %%
+# adding a dense layer with random weights and bias
+def dense(X, weights, bias):
+    return X @ weights + bias
+
+W = np.random.randn(flat.shape[1], 2)  # output size = 2
+b = np.random.randn(2)
+
+fc_out = dense(flat, W, b)
+
+# %%
