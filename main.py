@@ -46,3 +46,23 @@ def relu(X):
 relu_out = relu(conv_out)
 
 # %%
+# applying maxpooling with a size of 2 and stride = 2
+def maxpool2d(X, size=2, stride=2):
+    B, C, H, W = X.shape
+    out_h = H // size
+    out_w = W // size
+    out = np.zeros((B, C, out_h, out_w))
+
+    for b in range(B):
+        for c in range(C):
+            for i in range(out_h):
+                for j in range(out_w):
+                    region = X[b, c, i*stride:i*stride+size, j*stride:j*stride+size]
+                    out[b, c, i, j] = np.max(region)
+    return out
+
+pool_out = maxpool2d(relu_out)
+# the output shape is (1, 1, 3, 3)
+print("Pooled shape:", pool_out.shape)
+
+# %%
