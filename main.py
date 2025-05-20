@@ -29,3 +29,20 @@ def conv2d(X, kernel, stride=1):
 
 
 # %%
+# creating a 3*3 filter with random values
+kernel = np.array([[[[1, 0, -1],
+                     [1, 0, -1],
+                     [1, 0, -1]]]])  # shape (1, 1, 3, 3)
+
+conv_out = conv2d(input_image, kernel)
+# the output shape is (1, 1, 6, 6)
+print("Conv output shape:", conv_out.shape)
+
+# %%
+# applying relu activation
+def relu(X):
+    return np.maximum(0, X)
+
+relu_out = relu(conv_out)
+
+# %%
