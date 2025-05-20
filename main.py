@@ -85,3 +85,13 @@ b = np.random.randn(2)
 fc_out = dense(flat, W, b)
 
 # %%
+# adding softmax activation for classification
+def softmax(X):
+    e_x = np.exp(X - np.max(X, axis=1, keepdims=True))
+    return e_x / np.sum(e_x, axis=1, keepdims=True)
+
+probs = softmax(fc_out)
+# the output shape is (1, 2) obviously
+print("Probabilities:", probs)
+
+# %%
