@@ -70,3 +70,59 @@ class Conv2D:
         return dx
 
 # %%
+# -----------------------
+# ReLU Activation
+# -----------------------
+class ReLU:
+    def forward(self, x):
+        self.mask = (x > 0)
+        return x * self.mask
+
+    def backward(self, dout):
+        return dout * self.mask
+
+# -----------------------
+# Max Pooling Layer
+# -----------------------
+class MaxPool2D:
+    def __init__(self, size=2, stride=2):
+        self.size = size
+        self.stride = stride
+
+    def forward(self, x):
+        self.x = x
+        batch_size, C, H, W = x.shape
+        out_H = (H - self.size) // self.stride + 1
+        out_W = (W - self.size) // self.stride + 1
+        out = np.zeros((batch_size, C, out_H, out_W))
+        self.max_indices = np.zeros_like(x)
+
+        for b in range(batch_size):
+            for c in range(C):
+                for i in range(out_H):
+                    for j in range(out_W):
+                        h_start = i * self.stride
+                        w_start = j * self.stride
+                        region = x[b, c, h_start:h_start + self.size, w_start:w_start + self.size]
+                        max_val = np.max(region)
+                        out[b, c, i, j] = max_val
+                        mask = (region == max_val)
+                        self.max_indices[b, c, h_start:h_start + self.size, w_start:w_start + self.size] += mask
+        return out
+
+    def backward(self, dout):
+        dx = np.zeros_like(self.x)
+        batch_size, C, out_H, out_W = dout.shape
+
+        for b in range(batch_size):
+            for c in range(C):
+                for i in range(out_H):
+                    for j in range(out_W):
+                        h_start = i * self.stride
+                        w_start = j * self.stride
+                        dx[b, c, h_start:h_start + self.size, w_start:w_start + self.size] += (
+                            self.max_indices[b, c, h_start:h_start + self.size, w_start:w_start + self.size] *
+                            dout[b, c, i, j]
+                        )
+        return dx
+# %%
