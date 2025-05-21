@@ -126,6 +126,53 @@ class MaxPool2D:
                         )
         return dx
 # %%
+# -----------------------
+# Flatten Layer
+# -----------------------
+class Flatten:
+    def forward(self, x):
+        self.original_shape = x.shape
+        return x.reshape(x.shape[0], -1)
+
+    def backward(self, dout):
+        return dout.reshape(self.original_shape)
+
+# -----------------------
+# Dense Layer
+# -----------------------
+class Dense:
+    def __init__(self, in_dim, out_dim):
+        self.weights = np.random.randn(in_dim, out_dim) * 0.01
+        self.bias = np.zeros((1, out_dim))
+
+    def forward(self, x):
+        self.x = x
+        return x @ self.weights + self.bias
+
+    def backward(self, dout):
+        self.dw = self.x.T @ dout
+        self.db = np.sum(dout, axis=0, keepdims=True)
+        return dout @ self.weights.T
+    
+# -----------------------
+# Softmax + Cross-Entropy
+# -----------------------
+class SoftmaxCrossEntropy:
+    def forward(self, x, y_true):
+        exps = np.exp(x - np.max(x, axis=1, keepdims=True))
+        self.probs = exps / np.sum(exps, axis=1, keepdims=True)
+        self.y_true = y_true
+        m = x.shape[0]
+        log_likelihood = -np.log(self.probs[range(m), y_true])
+        loss = np.sum(log_likelihood) / m
+        return loss
+
+    def backward(self):
+        m = self.y_true.shape[0]
+        dx = self.probs.copy()
+        dx[range(m), self.y_true] -= 1
+        dx /= m
+        return dx
 
 # %%
 np.random.seed(42)
@@ -136,4 +183,30 @@ y = np.array([3])  # assuming 3 classes
 conv = Conv2D(in_channels=1, out_channels=2, kernel_size=3, stride=1, padding=1)
 relu = ReLU()
 pool = MaxPool2D(size=2, stride=2)
+flatten = Flatten()
+dense = Dense(in_dim=2 * 14 * 14, out_dim=10)
+loss_fn = SoftmaxCrossEntropy()
+
+lr = 0.01
+for epoch in range(10):
+    out = conv.forward(x)
+    out = relu.forward(out)
+    out = pool.forward(out)
+    out = flatten.forward(out)
+    out = dense.forward(out)
+    loss = loss_fn.forward(out, y)
+
+    dout = loss_fn.backward()
+    dout = dense.backward(dout)
+    dout = flatten.backward(dout)
+    dout = pool.backward(dout)
+    dout = relu.backward(dout)
+    dout = conv.backward(dout)
+
+    conv.weights -= lr * conv.dw
+    conv.bias -= lr * conv.db
+    dense.weights -= lr * dense.dw
+    dense.bias -= lr * dense.db
+
+    print(f"Epoch {epoch + 1}, Loss: {loss:.4f}")
 # %%
