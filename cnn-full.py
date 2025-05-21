@@ -126,3 +126,14 @@ class MaxPool2D:
                         )
         return dx
 # %%
+
+# %%
+np.random.seed(42)
+x = np.random.randn(1, 1, 28, 28)  # One grayscale image
+y = np.array([3])  # assuming 3 classes
+
+# define the layers of the CNN
+conv = Conv2D(in_channels=1, out_channels=2, kernel_size=3, stride=1, padding=1)
+relu = ReLU()
+pool = MaxPool2D(size=2, stride=2)
+# %%
