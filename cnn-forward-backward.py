@@ -41,3 +41,19 @@ print("Loss:", loss)
 
 
 # %%
+# backward pass
+dA = 2 * (A - target) / target.size
+dZ = dA * (Z > 0).astype(float)
+
+def conv2d_backward(X, dZ, W_shape):
+    dW = np.zeros(W_shape)
+    for i in range(dZ.shape[0]):
+        for j in range(dZ.shape[1]):
+            region = X[i:i+W_shape[0], j:j+W_shape[1]]
+            dW += dZ[i, j] * region
+    return dW
+
+dW = conv2d_backward(X, dZ, W.shape)
+print("Gradient dW:\n", dW)
+
+# %%
